@@ -1,0 +1,18 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "The api for the noobies.io platform",
+  "main": "index.js",
+  "repository": "https://github.com/noobies-io/api.git",
+  "author": "Ulisses Ferreira <ulissesvf@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "dotenv": "^8.0.0",
+    "fastify": "^2.4.1",
+    "node-fetch": "^2.6.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
