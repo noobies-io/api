@@ -4,6 +4,12 @@ require('dotenv').config()
 // Require the framework and instantiate it
 const fastify = require('fastify')({ logger: false })
 
+// Register CORS handler
+fastify.register(require('fastify-cors'), {
+  // put your options here
+  origin: '*'
+})
+
 // Routes handled in different JSs
 const positions = require('./routes/positions')
 
