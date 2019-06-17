@@ -19,7 +19,7 @@ module.exports = class Airtable {
       return this.cache;
     } else {
       console.log('Cache miss :(')
-      const response = await fetch('https://api.airtable.com/v0/appUWtWlwi7RLEtl3/Main', {
+      const response = await fetch('https://api.airtable.com/v0/appIzularDDL2q6Mw/Main', {
         method: 'get',
         headers: {
           'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`
