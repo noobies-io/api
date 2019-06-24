@@ -189,7 +189,7 @@ module.exports = function (fastify, opts, next) {
 
         const newPasswordReset = new PasswordReset({
           email,
-          hashedToken
+          token: hashedToken
         })
 
         return newPasswordReset.save()
@@ -216,6 +216,45 @@ module.exports = function (fastify, opts, next) {
 
   fastify.post('/confirm-password', async (request, reply) => {
 
+    const email = request.body.email
+    const newPassword = request.body.newPassword
+    const token = request.body.token
+
+    PasswordReset.query({ email: { eq: email }})
+      .exec()
+      .then((data) => {
+        if (data.count === 0)
+          throw new Error("No such email for password reset")
+
+        return bcrypt.compare(token, data[0].token)
+      })
+      .then((res) => {
+        if (!res)
+          throw new Error("Wrong token")
+
+        return bcrypt.hash(newPassword, 12)
+      })
+      .then((hashedPassword) => {
+        return User.update({ email }, { password: hashedPassword })
+      })
+      .then((updated) => {
+        reply
+          .code(200)
+          .send({
+            ok: true
+          })
+
+        PasswordReset.delete({ email })
+      })
+      .catch((error) => { // TODO handle this better
+        console.log(error)
+        reply
+          .code(500)
+          .send({
+            ok: false
+          })
+      })
+
   })
 
   fastify.post('/change-email', async (request, reply) => {
@@ -239,7 +278,7 @@ module.exports = function (fastify, opts, next) {
 
         const newEmailChange = new EmailChange({
           email,
-          hashedToken
+          token: hashedToken
         })
 
         return newEmailChange.save()
@@ -265,6 +304,70 @@ module.exports = function (fastify, opts, next) {
   })
 
   fastify.post('/confirm-email', async (request, reply) => {
+
+    const email = request.body.email
+    const newEmail = request.body.newEmail
+    const token = request.body.token
+
+    if (email === newEmail) {
+      reply
+        .code(400)
+        .send({
+          ok: false,
+          message: 'You cant change to the same email'
+        })
+
+      return
+    }
+
+    EmailChange.query({ email: { eq: email } })
+      .exec()
+      .then((data) => {
+        if (data.count === 0)
+          throw new Error("No such email for password reset")
+
+        return bcrypt.compare(token, data[0].token)
+      })
+      .then((res) => {
+        if (!res)
+          throw new Error("Wrong token")
+
+        return User.query({ email: { eq: email }}).exec()
+      })
+      .then((oldUser) => {
+        if (oldUser.count === 0)
+          throw new Error("User does not exist to change email")
+
+        const newUser = new User({
+          email: newEmail,
+          password: oldUser[0].password,
+          firstName: oldUser[0].firstName,
+          lastName: oldUser[0].lastName,
+          birthday: oldUser[0].birthday,
+          studyPlace: oldUser[0].studyPlace,
+          studySubject: oldUser[0].studySubject
+        })
+
+        return newUser.save()
+      })
+      .then((updated) => {
+        reply
+          .code(200)
+          .send({
+            ok: true
+          })
+
+        EmailChange.delete({ email })
+        User.delete({ email })
+      })
+      .catch((error) => { // TODO handle this better
+        console.log(error)
+        reply
+          .code(500)
+          .send({
+            ok: false
+          })
+      })
 
   })
 
