@@ -15,7 +15,7 @@ module.exports = function (fastify, opts, next) {
    * Get the positions displayed in the main page
    */
   fastify.get('/main', async (request, reply) => {
-    return this.airtableService.getHotPositions()
+    return this.airtableService.getSomePositions()
   })
 
   /**
@@ -26,8 +26,6 @@ module.exports = function (fastify, opts, next) {
    * @body ?location - String with the location (Example: "Lisbo")
    * @body ?pay - Any value. If none is present all results are shown. If
    * any value is present we will assume you want payed internships.
-   * @body ?degree - Any value. If none is present all results are shown.
-   * If any value is present we will return positions that need a graduate. 
    * @body ?text - String with a company or title name. Both will be checked
    */
   fastify.get('/filter', async (request, reply) => {
@@ -36,21 +34,16 @@ module.exports = function (fastify, opts, next) {
     const duration = request.query.duration
     const location = request.query.location
     const pay = request.query.pay
-    const degree = request.query.requirement
-    const textSearch = request.query.text.toLowerCase()
+    const textSearch = request.query.text
 
     const positions = await this.airtableService.getPositions()
 
     const filteredPositions = positions.filter((item) => {
-      return (category ? item.category === category : true) &&
-        (duration ? item.duration === duration : true) &&
-        (location ? item.location === location : true) &&
-        (pay ? item.payment !== 0 : true) &&
-        (degree ? item.degree === 'yes' : true) &&
-        (textSearch ? (
-          (textSearch ? item.company.toLowerCase().includes(textSearch) : false) ||
-          (textSearch ? item.title.toLowerCase().includes(textSearch) : false)
-        ) : true)
+      return filterCategory(category, item) &&
+        filterDuration(duration, item) &&
+        filterLocation(location, item) &&
+        filterPay(pay, item) &&
+        filterText(textSearch, item)
     })
   
     reply.code(200).send(filteredPositions)
@@ -71,4 +64,48 @@ module.exports = function (fastify, opts, next) {
   })
 
   next()
+}
+
+const filterCategory = (category, item) => {
+
+  if (!category) {
+    return true
+  } else {
+    return item.category === category
+  }
+}
+
+// TODO
+const filterDuration = (duration, item) => {
+ return true
+}
+
+const filterLocation = (location, item) => {
+  
+  if (!location) {
+    return true
+  } else {
+    return item.location === location
+  }
+}
+
+const filterPay = (pay, item) => {
+
+  if (!pay) {
+    return true
+  } else {
+    return item.paid === pay
+  }
+}
+  
+const filterText = (textSearch, item) => {
+
+  const text = textSearch ? textSearch.toLowerCase() : null
+  
+  if (!text) {
+    return true
+  } else {
+    return item.company.toLowerCase().includes(text) || item.title.toLowerCase().includes(text)
+  }
+
 }
