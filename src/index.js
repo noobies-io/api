@@ -10,7 +10,8 @@ fastify.register(require('./services/database'))
 // Register CORS handler
 fastify.register(require('fastify-cors'), {
   // put your options here
-  origin: '*'
+  credentials: true,
+  origin: ['http://localhost:8080', 'https://noobies.io']
 })
 
 fastify.register(require('fastify-cookie'))
