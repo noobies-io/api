@@ -14,6 +14,7 @@ module.exports = function (fastify, opts, next) {
   fastify.get('/login', async (request, reply) => {
 
     const token = request.cookies.token
+    console.log(request.cookies)
     
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
@@ -34,8 +35,12 @@ module.exports = function (fastify, opts, next) {
 
   fastify.post('/login', async (request, reply) => {
 
+    console.log('Hit')
+
     const email = request.body.email
     const password = request.body.password
+
+    console.log(email)
 
     User.query({ email: { eq: email } })
       .exec()
@@ -58,6 +63,8 @@ module.exports = function (fastify, opts, next) {
         }, process.env.JWT_SECRET, {
           expiresIn: (86400 * 15)
         })
+
+        console.log(token)
 
         reply
           .setCookie('token', token, { expires: new Date(Date.now() + 86400 * 15e3), httpOnly: true })
@@ -82,6 +89,12 @@ module.exports = function (fastify, opts, next) {
     const email = request.body.email
     const password = request.body.password
 
+    const firstName = request.body.firstName
+    const lastName = request.body.lastName
+    const birthday = request.body.birthday
+    const studyPlace = request.body.studyPlace
+    const studySubject = request.body.studySubject
+
     const hashedPassword = bcrypt.hash(password, 12)
     const randomToken = crypto.randomBytes(16).toString('hex')
     const hashedToken = bcrypt.hash(await randomToken, 12)
@@ -94,7 +107,12 @@ module.exports = function (fastify, opts, next) {
         const newRegister = new Register({
           email, 
           password: hashedData[0], 
-          token: hashedData[1]
+          token: hashedData[1],
+          firstName,
+          lastName,
+          birthday,
+          studyPlace,
+          studySubject,
         })
         return newRegister.save()
       })
@@ -142,14 +160,26 @@ module.exports = function (fastify, opts, next) {
 
         const newUser = new User({
           email: user.email,
-          password: user.password
+          password: user.password,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          birthday: user.birthday,
+          studyPlace: user.studyPlace,
+          studySubject: user.studySubject,
         })
 
         return newUser.save()
       })
-      .then((data) => {
-        console.log(data)
+      .then(() => {
+
+        const token = jwt.sign({
+          email
+        }, process.env.JWT_SECRET, {
+            expiresIn: (86400 * 15)
+        })
+
         reply
+          .setCookie('token', token, { expires: new Date(Date.now() + 86400 * 15e3), httpOnly: true })
           .code(200)
           .send({
             ok: true

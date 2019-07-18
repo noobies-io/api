@@ -12,7 +12,7 @@ module.exports = {
 
   sendRegisterEmail: async (email, TOKEN) => {
 
-    let html = await loadTemplate('register', { TOKEN })
+    let html = await loadTemplate('register', { EMAIL: email, TOKEN })
     let data = {
       from: 'Noobies <welcome@noobies.io>',
       to: email,
@@ -25,7 +25,7 @@ module.exports = {
 
   sendPasswordResetEmail: async (email, TOKEN) => {
 
-    let html = await loadTemplate('reset-password', { TOKEN })
+    let html = await loadTemplate('reset-password', { EMAIL: email, TOKEN })
     let data = {
       from: 'Noobies <welcome@noobies.io>',
       to: email,
@@ -38,7 +38,7 @@ module.exports = {
 
   sendEmailChangeEmail: async (email, TOKEN) => {
 
-    let html = await loadTemplate('change-email', { TOKEN })
+    let html = await loadTemplate('change-email', { EMAIL: email, TOKEN })
     let data = {
       from: 'Noobies <welcome@noobies.io>',
       to: email,
