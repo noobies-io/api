@@ -4,8 +4,8 @@ require('dotenv').config()
 // Require the framework and instantiate it
 const fastify = require('fastify')({ logger: false })
 
-// Register our DynamoDB interface
-fastify.register(require('./services/database'))
+// Register our DynamoDB interface - DISABLED FOR MVP
+// fastify.register(require('./services/database'))
 
 // Register CORS handler
 fastify.register(require('fastify-cors'), {
@@ -18,10 +18,10 @@ fastify.register(require('fastify-cookie'))
 
 // Routes handled in different JSs
 const positions = require('./routes/positions')
-const auth = require('./routes/auth')
+// const auth = require('./routes/auth') - DISABLED FOR MVP
 
 // Register route handlers
-fastify.register(auth, { prefix: '/auth' })
+// fastify.register(auth, { prefix: '/auth' }) - DISABLED FOR MVP
 fastify.register(positions, { prefix: '/positions' })
 
 // Run the server!
