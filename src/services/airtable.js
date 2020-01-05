@@ -20,9 +20,9 @@ module.exports = class Airtable {
     return this.positions.slice(0, 10)
   }
 
-  async updatePositions() { // TODO - Implement hot mechanism
+  async updatePositions() {
     try {
-      const response = await fetch('https://api.airtable.com/v0/appIzularDDL2q6Mw/Posi%C3%A7%C3%B5es', {
+      const response = await fetch('https://api.airtable.com/v0/appAF9Tj6mjluOJhV/Positions', {
         method: 'get',
         headers: {
           'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`
@@ -31,28 +31,22 @@ module.exports = class Airtable {
 
       const airtableData = await response.json()
 
-      this.positions = airtableData.records.map((entry) => {
-        let newEntry = {
-          title: entry.fields.Title,
-          category: entry.fields.Category,
-          company: entry.fields.CompanyName[0],
-          smallLogo: entry.fields.Logo[0].thumbnails.large.url,
-          bigLogo: entry.fields.Logo[0].thumbnails.full.url,
-          duration: entry.fields.Duration,
-          paid: entry.fields.Paid,
-          location: entry.fields.Location,
-          description: entry.fields.Description,
-          requirements: entry.fields.Requirements,
-          url: entry.fields['URL'],
-          date: entry.fields.Date,
-          payment: entry.fields.Paid,
-          qualifications: entry.fields.Qualifications
-        }
+      const positions = []
+      
+      for (let i = 0; i < airtableData.records.length; i++) {
+        const entry = airtableData.records[i]
+        try {
+          const newEntry = {
+            title: entry.fields.Title,
+            company: entry.fields.Company,
+            logo: entry.fields.Logo[0].thumbnails.full.url,
+            url: entry.fields.URL
+          }
+          positions.push(newEntry)
+        } catch { }
+      }
 
-        return newEntry
-      })
-
-      this.positions = shuffle(this.positions)
+      this.positions = this.shuffle(positions)
 
       return true
     } catch (err) {
